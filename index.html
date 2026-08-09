@@ -338,7 +338,31 @@
     .content{max-width:none;padding:0}
   }
 
-  /* ---------- WATCH THIS SECTION ---------- */
+  /* ---------- SECTION VIDEO ---------- */
+  .ytbox{
+    position:relative;width:100%;max-width:640px;aspect-ratio:16/9;
+    margin:-4px 0 28px;border-radius:14px;overflow:hidden;
+    box-shadow:0 2px 8px rgba(22,32,77,.10), 0 14px 34px rgba(22,32,77,.14);
+  }
+  .ytbox iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+  .ytface{
+    position:absolute;inset:0;width:100%;height:100%;border:0;padding:0;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:15px;
+    font-family:'Inter',sans-serif;color:#fff;
+  }
+  .ytplay{
+    width:68px;height:68px;border-radius:50%;
+    background:rgba(255,255,255,.22);
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .18s ease, background .18s ease;
+  }
+  .ytface:hover .ytplay{transform:scale(1.08);background:rgba(255,255,255,.30)}
+  .ytface:active .ytplay{transform:scale(1.02)}
+  .ytlabel{text-align:center;line-height:1.3}
+  .ytlabel b{display:block;font-size:1rem;font-weight:600;letter-spacing:.005em}
+  .ytlabel i{display:block;font-style:normal;font-size:.8rem;font-weight:500;opacity:.85;margin-top:3px;font-variant-numeric:tabular-nums}
+
+  /* compact button — home only */
   .watch{
     display:inline-flex;align-items:center;gap:12px;
     margin:-6px 0 26px;padding:12px 22px 12px 15px;
@@ -350,10 +374,10 @@
   .watch:active{transform:translateY(0)}
   .watch svg{flex:none}
   .watch .wl{display:flex;flex-direction:column;line-height:1.28;text-align:left}
-  .watch .wl b{font-size:.95rem;font-weight:600;letter-spacing:.005em}
-  .watch .wl i{font-style:normal;font-size:.78rem;font-weight:500;opacity:.85;font-variant-numeric:tabular-nums}
+  .watch .wl b{font-size:.95rem;font-weight:600}
   @media(max-width:640px){
     .watch{display:flex;width:100%;justify-content:flex-start;padding:14px 18px 14px 14px}
+    .ytbox{margin-bottom:24px}
   }
 </style>
 </head>
@@ -1577,8 +1601,8 @@
 
     // ---------- SESSION VIDEO ----------
   // One recording backs every section page. To repoint at a different video,
-  // change VIDEO_ID. To fix where a page jumps in, edit that section's
-  // timestamp below -- "M:SS" or "H:MM:SS", exactly as it reads on YouTube.
+  // change VIDEO_ID. To fix where a page starts, edit that section's timestamp
+  // below -- "M:SS" or "H:MM:SS", exactly as it reads on YouTube.
   var VIDEO_ID = "t_I8cAMBHx8";
   var STARTS = {
     home:"0:00",
@@ -1592,7 +1616,7 @@
     s29:"1:12:42"
   };
 
-  // ---------- WATCH BUTTON per panel ----------
+  // ---------- PLAYER per panel ----------
   function tsSeconds(t){
     var p = String(t).split(':'), s = 0;
     for(var i=0;i<p.length;i++){ s = s*60 + (parseInt(p[i],10)||0); }
@@ -1610,6 +1634,33 @@
     var c = rgbOf(hex);
     return 'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')';
   }
+  var PLAY_SVG = '<svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true">'+
+                 '<path d="M8.6 5.6 L19 12 L8.6 18.4 Z" fill="#fff"/></svg>';
+
+  // Builds the click-to-play cover. Nothing loads from YouTube until it's clicked,
+  // so 29 players cost the page nothing on open.
+  function makeFacade(box, acc, t){
+    var f = document.createElement('button');
+    f.type = 'button';
+    f.className = 'ytface';
+    f.style.background = 'linear-gradient(135deg,'+acc+','+darken(acc,.26)+')';
+    f.setAttribute('aria-label','Play this section, starting at '+t);
+    f.innerHTML = '<span class="ytplay">'+PLAY_SVG+'</span>'+
+                  '<span class="ytlabel"><b>Watch this section</b><i>Starts at '+t+'</i></span>';
+    f.addEventListener('click', function(){
+      var fr = document.createElement('iframe');
+      fr.src = 'https://www.youtube-nocookie.com/embed/'+VIDEO_ID+
+               '?start='+tsSeconds(t)+'&autoplay=1&rel=0&modestbranding=1';
+      fr.title = 'Sales Navigator session';
+      fr.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      fr.setAttribute('allowfullscreen','');
+      box.innerHTML = '';
+      box.appendChild(fr);
+    });
+    box.innerHTML = '';
+    box.appendChild(f);
+  }
+
   Object.keys(STARTS).forEach(function(id){
     var panel = document.getElementById('p-'+id);
     if(!panel) return;
@@ -1617,24 +1668,49 @@
     if(!h1) return;
     var acc = (panel.style.getPropertyValue('--accent')||'#ef4a52').trim();
     var t   = STARTS[id];
-    var a   = document.createElement('a');
-    a.className = 'watch';
-    a.href   = 'https://youtu.be/'+VIDEO_ID+'?t='+tsSeconds(t);
-    a.target = '_blank';
-    a.rel    = 'noopener';
-    a.style.background  = 'linear-gradient(135deg,'+acc+','+darken(acc,.24)+')';
-    a.style.boxShadow   = '0 2px 6px rgba(22,32,77,.10), 0 10px 26px '+glow(acc,.30);
-    a.onmouseenter = function(){ a.style.boxShadow = '0 4px 10px rgba(22,32,77,.12), 0 16px 34px '+glow(acc,.38); };
-    a.onmouseleave = function(){ a.style.boxShadow = '0 2px 6px rgba(22,32,77,.10), 0 10px 26px '+glow(acc,.30); };
-    a.innerHTML =
-      '<svg width="27" height="27" viewBox="0 0 24 24" aria-hidden="true">'+
-        '<circle cx="12" cy="12" r="11.2" fill="rgba(255,255,255,.20)"/>'+
-        '<path d="M10 8.2 L16.2 12 L10 15.8 Z" fill="#fff"/>'+
-      '</svg>'+
-      '<span class="wl"><b>'+(id==='home' ? 'Watch the full session' : 'Watch this section')+'</b>'+
-      (id==='home' ? '' : '<i>Starts at '+t+'</i>')+'</span>';
-    h1.insertAdjacentElement('afterend', a);
+
+    // Home stays a compact button so the section directory keeps its place.
+    if(id === 'home'){
+      var a = document.createElement('a');
+      a.className = 'watch';
+      a.href   = 'https://youtu.be/'+VIDEO_ID;
+      a.target = '_blank';
+      a.rel    = 'noopener';
+      a.style.background = 'linear-gradient(135deg,'+acc+','+darken(acc,.24)+')';
+      a.style.boxShadow  = '0 2px 6px rgba(22,32,77,.10), 0 10px 26px '+glow(acc,.30);
+      a.innerHTML = '<svg width="27" height="27" viewBox="0 0 24 24" aria-hidden="true">'+
+                    '<circle cx="12" cy="12" r="11.2" fill="rgba(255,255,255,.20)"/>'+
+                    '<path d="M10 8.2 L16.2 12 L10 15.8 Z" fill="#fff"/></svg>'+
+                    '<span class="wl"><b>Watch the full session</b></span>';
+      h1.insertAdjacentElement('afterend', a);
+      return;
+    }
+
+    var box = document.createElement('div');
+    box.className = 'ytbox';
+    box.dataset.acc = acc;
+    box.dataset.ts  = t;
+    h1.insertAdjacentElement('afterend', box);
+    makeFacade(box, acc, t);
   });
+
+  // Leaving a page stops its video -- swap the iframe back for the cover so
+  // audio never keeps running from a section you've navigated away from.
+  var contentEl = document.querySelector('.content');
+  if(contentEl && window.MutationObserver){
+    new MutationObserver(function(muts){
+      muts.forEach(function(m){
+        var p = m.target;
+        if(!p.classList || !p.classList.contains('panel')) return;
+        if(p.classList.contains('active')) return;
+        p.querySelectorAll('.ytbox').forEach(function(box){
+          if(box.querySelector('iframe')){
+            makeFacade(box, box.dataset.acc, box.dataset.ts);
+          }
+        });
+      });
+    }).observe(contentEl, {attributes:true, attributeFilter:['class'], subtree:true});
+  }
 
   // ---------- ROUTING ----------
   var panels = document.querySelectorAll('.panel');
