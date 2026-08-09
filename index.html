@@ -337,6 +337,24 @@
     .main{margin-left:0}.panel{display:block!important}
     .content{max-width:none;padding:0}
   }
+
+  /* ---------- WATCH THIS SECTION ---------- */
+  .watch{
+    display:inline-flex;align-items:center;gap:12px;
+    margin:-6px 0 26px;padding:12px 22px 12px 15px;
+    border-radius:12px;border:0;text-decoration:none;cursor:pointer;
+    font-family:'Inter',sans-serif;color:#fff;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .watch:hover{transform:translateY(-2px)}
+  .watch:active{transform:translateY(0)}
+  .watch svg{flex:none}
+  .watch .wl{display:flex;flex-direction:column;line-height:1.28;text-align:left}
+  .watch .wl b{font-size:.95rem;font-weight:600;letter-spacing:.005em}
+  .watch .wl i{font-style:normal;font-size:.78rem;font-weight:500;opacity:.85;font-variant-numeric:tabular-nums}
+  @media(max-width:640px){
+    .watch{display:flex;width:100%;justify-content:flex-start;padding:14px 18px 14px 14px}
+  }
 </style>
 </head>
 <body>
@@ -1555,6 +1573,67 @@
     }
     var rel=panel.querySelector('.related');
     if(rel){ panel.insertBefore(pager, rel); } else { panel.appendChild(pager); }
+  });
+
+    // ---------- SESSION VIDEO ----------
+  // One recording backs every section page. To repoint at a different video,
+  // change VIDEO_ID. To fix where a page jumps in, edit that section's
+  // timestamp below -- "M:SS" or "H:MM:SS", exactly as it reads on YouTube.
+  var VIDEO_ID = "t_I8cAMBHx8";
+  var STARTS = {
+    home:"0:00",
+    s01:"0:00",     s02:"2:18",     s03:"3:45",     s04:"5:58",
+    s05:"7:37",     s06:"9:43",     s07:"12:51",    s08:"14:20",
+    s09:"16:06",    s10:"17:29",    s11:"22:07",    s12:"30:27",
+    s13:"32:20",    s14:"34:16",    s15:"36:08",    s16:"39:24",
+    s17:"43:33",    s18:"45:46",    s19:"48:32",    s20:"49:35",
+    s21:"52:00",    s22:"53:34",    s23:"57:50",    s24:"1:02:18",
+    s25:"1:06:42",  s26:"1:07:35",  s27:"1:09:14",  s28:"1:10:57",
+    s29:"1:12:42"
+  };
+
+  // ---------- WATCH BUTTON per panel ----------
+  function tsSeconds(t){
+    var p = String(t).split(':'), s = 0;
+    for(var i=0;i<p.length;i++){ s = s*60 + (parseInt(p[i],10)||0); }
+    return s;
+  }
+  function rgbOf(hex){
+    var n = parseInt(String(hex).trim().replace('#',''),16);
+    return [(n>>16)&255,(n>>8)&255,n&255];
+  }
+  function darken(hex,pct){
+    var c = rgbOf(hex);
+    return 'rgb('+Math.round(c[0]*(1-pct))+','+Math.round(c[1]*(1-pct))+','+Math.round(c[2]*(1-pct))+')';
+  }
+  function glow(hex,a){
+    var c = rgbOf(hex);
+    return 'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')';
+  }
+  Object.keys(STARTS).forEach(function(id){
+    var panel = document.getElementById('p-'+id);
+    if(!panel) return;
+    var h1 = panel.querySelector('h1.page');
+    if(!h1) return;
+    var acc = (panel.style.getPropertyValue('--accent')||'#ef4a52').trim();
+    var t   = STARTS[id];
+    var a   = document.createElement('a');
+    a.className = 'watch';
+    a.href   = 'https://youtu.be/'+VIDEO_ID+'?t='+tsSeconds(t);
+    a.target = '_blank';
+    a.rel    = 'noopener';
+    a.style.background  = 'linear-gradient(135deg,'+acc+','+darken(acc,.24)+')';
+    a.style.boxShadow   = '0 2px 6px rgba(22,32,77,.10), 0 10px 26px '+glow(acc,.30);
+    a.onmouseenter = function(){ a.style.boxShadow = '0 4px 10px rgba(22,32,77,.12), 0 16px 34px '+glow(acc,.38); };
+    a.onmouseleave = function(){ a.style.boxShadow = '0 2px 6px rgba(22,32,77,.10), 0 10px 26px '+glow(acc,.30); };
+    a.innerHTML =
+      '<svg width="27" height="27" viewBox="0 0 24 24" aria-hidden="true">'+
+        '<circle cx="12" cy="12" r="11.2" fill="rgba(255,255,255,.20)"/>'+
+        '<path d="M10 8.2 L16.2 12 L10 15.8 Z" fill="#fff"/>'+
+      '</svg>'+
+      '<span class="wl"><b>'+(id==='home' ? 'Watch the full session' : 'Watch this section')+'</b>'+
+      (id==='home' ? '' : '<i>Starts at '+t+'</i>')+'</span>';
+    h1.insertAdjacentElement('afterend', a);
   });
 
   // ---------- ROUTING ----------
