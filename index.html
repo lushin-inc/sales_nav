@@ -1616,17 +1616,21 @@
   // change VIDEO_ID. To fix where a page starts, edit that section's timestamp
   // below -- "M:SS" or "H:MM:SS", exactly as it reads on YouTube.
   // (The cover image is the .ytface background rule in the stylesheet.)
+  //
+  // These are set one second ahead of the first spoken word of each segment,
+  // checked against the transcript rather than the YouTube chapter marks --
+  // several of those landed after the speaker had already started.
   var VIDEO_ID = "t_I8cAMBHx8";
   var STARTS = {
     home:"0:00",
-    s01:"0:00",     s02:"2:18",     s03:"3:45",     s04:"5:58",
-    s05:"7:37",     s06:"9:43",     s07:"12:51",    s08:"14:20",
-    s09:"16:06",    s10:"17:29",    s11:"22:07",    s12:"30:27",
-    s13:"32:20",    s14:"34:16",    s15:"36:08",    s16:"39:24",
-    s17:"43:33",    s18:"45:46",    s19:"48:32",    s20:"49:35",
-    s21:"52:00",    s22:"53:34",    s23:"57:50",    s24:"1:02:18",
-    s25:"1:06:42",  s26:"1:07:35",  s27:"1:09:14",  s28:"1:10:57",
-    s29:"1:12:42"
+    s01:"0:00",     s02:"2:13",     s03:"3:44",     s04:"5:56",
+    s05:"7:35",     s06:"9:39",     s07:"12:50",    s08:"14:21",
+    s09:"16:04",    s10:"17:34",    s11:"22:05",    s12:"30:25",
+    s13:"32:21",    s14:"34:15",    s15:"36:09",    s16:"39:23",
+    s17:"43:33",    s18:"45:48",    s19:"48:26",    s20:"49:34",
+    s21:"51:59",    s22:"53:35",    s23:"57:51",    s24:"1:02:04",
+    s25:"1:06:42",  s26:"1:07:34",  s27:"1:09:15",  s28:"1:10:54",
+    s29:"0:00"
   };
 
   // ---------- PLAYER per panel ----------
